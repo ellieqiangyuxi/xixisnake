@@ -59,7 +59,7 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    padding: 12px;
+    padding: 8px;
 }
 
 header {
@@ -68,7 +68,7 @@ header {
     justify-content: center;
     position: relative;
     width: 100%;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
 }
 
 header h1 {
@@ -327,29 +327,67 @@ header h1 {
     margin-bottom: 24px;
 }
 
-/* D-pad */
-.dpad {
+/* D-pad wrapper */
+.dpad-wrapper {
     display: none;
     flex-direction: column;
     align-items: center;
-    margin-top: 16px;
+    margin-top: 6px;
     gap: 4px;
+}
+
+/* D-pad toggle button */
+.dpad-toggle {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.4rem;
+    padding: 5px 14px;
+    border: 2px solid var(--container-border);
+    border-radius: 0;
+    background: var(--pill-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease;
+}
+
+.dpad-toggle.active {
+    background: var(--pill-active-bg);
+    color: var(--text);
+}
+
+.dpad-toggle:active {
+    background: var(--dpad-active-bg);
+}
+
+/* D-pad */
+.dpad {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.dpad.dpad-hidden {
+    display: none;
+}
+
+.dpad:not(.dpad-hidden) {
+    display: flex;
 }
 
 .dpad-middle-row {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
 }
 
 .dpad-btn {
-    width: 56px;
-    height: 56px;
+    width: 40px;
+    height: 40px;
     border: 2px solid var(--container-border);
     border-radius: 0;
     background: var(--dpad-bg);
     color: var(--text);
-    font-size: 1.2rem;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -364,19 +402,19 @@ header h1 {
 }
 
 .dpad-center {
-    width: 56px;
-    height: 56px;
+    width: 40px;
+    height: 40px;
 }
 
-/* Show D-pad on touch devices / narrow screens */
+/* Show D-pad wrapper on touch devices / narrow screens */
 @media (max-width: 768px) {
-    .dpad {
+    .dpad-wrapper {
         display: flex;
     }
 }
 
 @media (pointer: coarse) {
-    .dpad {
+    .dpad-wrapper {
         display: flex;
     }
 }
@@ -388,12 +426,13 @@ header h1 {
     }
 
     .dpad-btn {
-        width: 50px;
-        height: 50px;
+        width: 36px;
+        height: 36px;
+        font-size: 0.8rem;
     }
 
     .dpad-center {
-        width: 50px;
-        height: 50px;
+        width: 36px;
+        height: 36px;
     }
 }

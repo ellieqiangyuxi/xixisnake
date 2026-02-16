@@ -8,8 +8,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const startBtn = document.getElementById("start-btn");
     const restartBtn = document.getElementById("restart-btn");
     const dpad = document.getElementById("dpad");
+    const dpadToggle = document.getElementById("dpad-toggle");
     const themeToggle = document.getElementById("theme-toggle");
     const titleEl = document.querySelector("header h1");
+
+    // D-pad toggle
+    dpadToggle.addEventListener("click", () => {
+        dpad.classList.toggle("dpad-hidden");
+        dpadToggle.classList.toggle("active");
+    });
 
     // Theme toggle
     function isDark() {
@@ -35,12 +42,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const headImage = new Image();
     headImage.src = "assets/snake-head.png";
 
-    // Sizing — fill 90% of the viewport (square), Retina-aware
+    // Sizing — Retina-aware, at least 75% of viewport
     const container = document.getElementById("game-container");
     function resizeCanvas() {
         const vw = window.innerWidth;
         const vh = window.innerHeight;
-        const size = Math.floor(Math.min(vw, vh) * 0.90);
+        // On mobile (narrow), use 95% of width but cap to 85% of height to leave room for header/toggle
+        // On desktop, use 90% of the smaller dimension
+        const isMobile = vw < 768 || ('ontouchstart' in window);
+        const size = isMobile
+            ? Math.floor(Math.min(vw * 0.95, vh * 0.78))
+            : Math.floor(Math.min(vw, vh) * 0.90);
         const dpr = window.devicePixelRatio || 1;
         container.style.width = size + "px";
         container.style.height = size + "px";

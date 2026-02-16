@@ -27,7 +27,6 @@
             <!-- Start Screen Overlay -->
             <div id="start-screen" class="overlay">
                 <div class="overlay-content">
-                    <h2>Xixi Snake</h2>
                     <div class="food-selector">
                         <p>What would you like to eat?</p>
                         <div class="food-options">
@@ -82,15 +81,18 @@
             </div>
         </div>
 
-        <!-- D-pad for mobile -->
-        <div id="dpad" class="dpad">
-            <button class="dpad-btn dpad-up" data-direction="up" aria-label="Up">&#9650;</button>
-            <div class="dpad-middle-row">
-                <button class="dpad-btn dpad-left" data-direction="left" aria-label="Left">&#9664;</button>
-                <div class="dpad-center"></div>
-                <button class="dpad-btn dpad-right" data-direction="right" aria-label="Right">&#9654;</button>
+        <!-- D-pad toggle + controls for mobile -->
+        <div id="dpad-wrapper" class="dpad-wrapper">
+            <button id="dpad-toggle" class="dpad-toggle" aria-label="Toggle D-pad">D-Pad</button>
+            <div id="dpad" class="dpad dpad-hidden">
+                <button class="dpad-btn dpad-up" data-direction="up" aria-label="Up">&#9650;</button>
+                <div class="dpad-middle-row">
+                    <button class="dpad-btn dpad-left" data-direction="left" aria-label="Left">&#9664;</button>
+                    <div class="dpad-center"></div>
+                    <button class="dpad-btn dpad-right" data-direction="right" aria-label="Right">&#9654;</button>
+                </div>
+                <button class="dpad-btn dpad-down" data-direction="down" aria-label="Down">&#9660;</button>
             </div>
-            <button class="dpad-btn dpad-down" data-direction="down" aria-label="Down">&#9660;</button>
         </div>
     </div>
 
