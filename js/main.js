@@ -3,11 +3,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const scoreDisplay = document.getElementById("score-display");
     const scoreEl = document.getElementById("score");
     const finalScoreEl = document.getElementById("final-score");
+
     const startScreen = document.getElementById("start-screen");
+    const pauseScreen = document.getElementById("pause-screen");
     const gameOverScreen = document.getElementById("game-over-screen");
+
     const startBtn = document.getElementById("start-btn");
     const restartBtn = document.getElementById("restart-btn");
-    const dpad = document.getElementById("dpad");
+
+    // HUD buttons
+    const pauseBtn = document.getElementById("pause-btn");
+    const menuBtn = document.getElementById("menu-btn");
+
+    // Pause overlay buttons
+    const resumeBtn = document.getElementById("resume-btn");
+    const pauseMenuBtn = document.getElementById("pause-menu-btn");
+
+    // Game over overlay buttons
+    const gameoverMenuBtn = document.getElementById("gameover-menu-btn");
+
     const themeToggle = document.getElementById("theme-toggle");
     const titleEl = document.querySelector("header h1");
 
@@ -37,51 +51,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Sizing — game screen fills available space in the console
     const container = document.getElementById("game-container");
-    const consoleTop = document.querySelector(".console-top");
+
+    let currentIntervalMs = null; // remember speed for resume
+    let loopTimer = null;
 
     function resizeCanvas() {
-        // Step 1: Measure actual available space inside the console
         const consoleEl = document.getElementById("console");
         const headerEl = document.querySelector("header");
-        const controlsEl = document.querySelector(".console-controls");
-
         const consoleStyle = getComputedStyle(consoleEl);
-        const consolePadLeft = parseFloat(consoleStyle.paddingLeft) || 0;
-        const consolePadRight = parseFloat(consoleStyle.paddingRight) || 0;
-        const consoleBorderLeft = parseFloat(consoleStyle.borderLeftWidth) || 0;
-        const consoleBorderRight = parseFloat(consoleStyle.borderRightWidth) || 0;
 
-        // Inner width of the console (what's actually available)
         const consoleInnerW = consoleEl.clientWidth;
-        // Subtract console-top padding (10px each side) + game container border (3px each side)
-        const availW = consoleInnerW - 20 - 6;
+        const availW = consoleInnerW - 20 - 6; // console-top padding + container border
 
-        // Available height: viewport minus header, controls, console chrome
         const vh = window.innerHeight;
         const headerH = headerEl ? headerEl.offsetHeight : 36;
-        const controlsH = controlsEl && controlsEl.offsetHeight > 0 ? controlsEl.offsetHeight : 0;
         const consoleBorderTop = parseFloat(consoleStyle.borderTopWidth) || 0;
         const consoleBorderBottom = parseFloat(consoleStyle.borderBottomWidth) || 0;
-        const verticalChrome = headerH + controlsH + consoleBorderTop + consoleBorderBottom + 30; // 30 = padding + margins
+        const verticalChrome = headerH + consoleBorderTop + consoleBorderBottom + 30;
         const availH = vh - verticalChrome;
 
-        // Step 2: Largest square that fits
         const size = Math.max(100, Math.floor(Math.min(availW, availH)));
 
-        // Step 3: Set container size, then read back actual size to be safe
         container.style.width = size + "px";
         container.style.height = size + "px";
 
-        // Read back actual rendered size (CSS may clamp it)
         const actualSize = Math.min(container.clientWidth, container.clientHeight);
 
         const dpr = window.devicePixelRatio || 1;
         canvas.width = actualSize * dpr;
         canvas.height = actualSize * dpr;
+
         const ctx = canvas.getContext("2d");
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
+
         if (game) {
             game.displaySize = actualSize;
         }
@@ -92,9 +96,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Game instance
     let game = new Game(canvas, headImage);
     resizeCanvas();
-    let controls = new Controls(canvas, dpad);
-    let loopTimer = null;
 
+    // Controls (D-pad removed)
+    let controls = new Controls(canvas);
     controls.onDirection((dir) => {
         game.setDirection(dir);
     });
@@ -117,9 +121,58 @@ document.addEventListener("DOMContentLoaded", () => {
         return checked ? checked.value : "angela";
     }
 
+    function clearLoop() {
+        if (loopTimer) {
+            clearInterval(loopTimer);
+            loopTimer = null;
+        }
+    }
+
+    function setTitleToDefault() {
+        titleEl.textContent = "Xixi Snake";
+        document.title = "Xixi Snake";
+    }
+
+    function showMainMenu() {
+        clearLoop();
+
+        // Hide gameplay overlays / HUD
+        scoreDisplay.classList.remove("visible");
+        pauseScreen.classList.add("hidden");
+        gameOverScreen.classList.add("hidden");
+
+        // Show start screen overlay
+        startScreen.classList.remove("hidden");
+
+        setTitleToDefault();
+
+        // Optional: reset game state so the first frame is clean
+        game.reset();
+        game.darkMode = isDark();
+        game.render();
+    }
+
+    function startLoop(interval) {
+        clearLoop();
+        loopTimer = setInterval(() => {
+            game.darkMode = isDark();
+            game.update();
+
+            if (game.isGameOver) {
+                clearLoop();
+                showGameOver();
+                return;
+            }
+
+            scoreEl.textContent = game.score;
+            game.render();
+        }, interval);
+    }
+
     function startGame() {
         const speed = getSelectedSpeed();
         const interval = SPEED_MAP[speed];
+        currentIntervalMs = interval;
 
         const foodChoice = getSelectedFood();
         game.foodImage = foodImages[foodChoice];
@@ -130,40 +183,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
         game.reset();
         resizeCanvas();
+
         scoreEl.textContent = "0";
         scoreDisplay.classList.add("visible");
+
         startScreen.classList.add("hidden");
+        pauseScreen.classList.add("hidden");
         gameOverScreen.classList.add("hidden");
 
         game.darkMode = isDark();
         game.render();
 
-        loopTimer = setInterval(() => {
-            game.darkMode = isDark();
-            game.update();
+        startLoop(interval);
+    }
 
-            if (game.isGameOver) {
-                clearInterval(loopTimer);
-                loopTimer = null;
-                showGameOver();
-                return;
-            }
+    function pauseGame() {
+        if (!loopTimer) return; // already paused / not running
+        clearLoop();
+        pauseScreen.classList.remove("hidden");
+    }
 
-            scoreEl.textContent = game.score;
-            game.render();
-        }, interval);
+    function resumeGame() {
+        if (loopTimer) return; // already running
+        pauseScreen.classList.add("hidden");
+
+        // If somehow resume happens without a stored interval, fall back to current selected speed
+        const interval = currentIntervalMs ?? SPEED_MAP[getSelectedSpeed()];
+        currentIntervalMs = interval;
+        startLoop(interval);
     }
 
     function showGameOver() {
         finalScoreEl.textContent = game.score;
         scoreDisplay.classList.remove("visible");
+        pauseScreen.classList.add("hidden");
         gameOverScreen.classList.remove("hidden");
     }
 
+    // ---- Wire up buttons ----
     startBtn.addEventListener("click", startGame);
     restartBtn.addEventListener("click", startGame);
 
-    // Allow space bar to start/restart
+    // HUD buttons
+    if (pauseBtn) pauseBtn.addEventListener("click", pauseGame);
+    if (menuBtn) menuBtn.addEventListener("click", showMainMenu);
+
+    // Pause overlay buttons
+    if (resumeBtn) resumeBtn.addEventListener("click", resumeGame);
+    if (pauseMenuBtn) pauseMenuBtn.addEventListener("click", showMainMenu);
+
+    // Game over overlay menu button
+    if (gameoverMenuBtn) gameoverMenuBtn.addEventListener("click", showMainMenu);
+
+    // Allow space bar to start/restart; Escape to pause/resume
     document.addEventListener("keydown", (e) => {
         if (e.key === " " || e.code === "Space") {
             if (!startScreen.classList.contains("hidden")) {
@@ -172,6 +244,15 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (!gameOverScreen.classList.contains("hidden")) {
                 e.preventDefault();
                 startGame();
+            }
+        }
+
+        if (e.key === "Escape") {
+            // Toggle pause/resume only during gameplay
+            if (startScreen.classList.contains("hidden") && gameOverScreen.classList.contains("hidden")) {
+                e.preventDefault();
+                if (loopTimer) pauseGame();
+                else resumeGame();
             }
         }
     });

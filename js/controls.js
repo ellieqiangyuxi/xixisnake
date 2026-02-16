@@ -1,14 +1,12 @@
 class Controls {
-    constructor(canvas, dpadElement) {
+    constructor(canvas) {
         this.canvas = canvas;
-        this.dpad = dpadElement;
         this._directionCallback = null;
         this._touchStartX = 0;
         this._touchStartY = 0;
 
         this._initKeyboard();
         this._initTouch();
-        this._initDpad();
     }
 
     onDirection(callback) {
@@ -83,22 +81,6 @@ class Controls {
         // Prevent scrolling when touching the canvas
         this.canvas.addEventListener("touchmove", (e) => e.preventDefault(), {
             passive: false,
-        });
-    }
-
-    _initDpad() {
-        if (!this.dpad) return;
-
-        const buttons = this.dpad.querySelectorAll(".dpad-btn");
-        buttons.forEach((btn) => {
-            const handler = (e) => {
-                e.preventDefault();
-                const dir = btn.dataset.direction;
-                if (dir) this._emit(dir);
-            };
-
-            btn.addEventListener("touchstart", handler, { passive: false });
-            btn.addEventListener("mousedown", handler);
         });
     }
 
