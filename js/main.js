@@ -40,26 +40,50 @@ document.addEventListener("DOMContentLoaded", () => {
     const consoleTop = document.querySelector(".console-top");
 
     function resizeCanvas() {
-        // Available space = console-top height minus header
-        const topRect = consoleTop.getBoundingClientRect();
-        const headerHeight = document.querySelector("header").getBoundingClientRect().height + 6;
-        const availH = topRect.height - headerHeight;
-        const availW = topRect.width - 20; // padding
+        // Step 1: Measure actual available space inside the console
+        const consoleEl = document.getElementById("console");
+        const headerEl = document.querySelector("header");
+        const controlsEl = document.querySelector(".console-controls");
 
-        // Square canvas, fit within available space
-        const size = Math.floor(Math.min(availW, availH));
+        const consoleStyle = getComputedStyle(consoleEl);
+        const consolePadLeft = parseFloat(consoleStyle.paddingLeft) || 0;
+        const consolePadRight = parseFloat(consoleStyle.paddingRight) || 0;
+        const consoleBorderLeft = parseFloat(consoleStyle.borderLeftWidth) || 0;
+        const consoleBorderRight = parseFloat(consoleStyle.borderRightWidth) || 0;
 
-        const dpr = window.devicePixelRatio || 1;
+        // Inner width of the console (what's actually available)
+        const consoleInnerW = consoleEl.clientWidth;
+        // Subtract console-top padding (10px each side) + game container border (3px each side)
+        const availW = consoleInnerW - 20 - 6;
+
+        // Available height: viewport minus header, controls, console chrome
+        const vh = window.innerHeight;
+        const headerH = headerEl ? headerEl.offsetHeight : 36;
+        const controlsH = controlsEl && controlsEl.offsetHeight > 0 ? controlsEl.offsetHeight : 0;
+        const consoleBorderTop = parseFloat(consoleStyle.borderTopWidth) || 0;
+        const consoleBorderBottom = parseFloat(consoleStyle.borderBottomWidth) || 0;
+        const verticalChrome = headerH + controlsH + consoleBorderTop + consoleBorderBottom + 30; // 30 = padding + margins
+        const availH = vh - verticalChrome;
+
+        // Step 2: Largest square that fits
+        const size = Math.max(100, Math.floor(Math.min(availW, availH)));
+
+        // Step 3: Set container size, then read back actual size to be safe
         container.style.width = size + "px";
         container.style.height = size + "px";
-        canvas.width = size * dpr;
-        canvas.height = size * dpr;
+
+        // Read back actual rendered size (CSS may clamp it)
+        const actualSize = Math.min(container.clientWidth, container.clientHeight);
+
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = actualSize * dpr;
+        canvas.height = actualSize * dpr;
         const ctx = canvas.getContext("2d");
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
         if (game) {
-            game.displaySize = size;
+            game.displaySize = actualSize;
         }
     }
 
