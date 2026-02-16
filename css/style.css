@@ -144,9 +144,14 @@ header h1 {
     border: 3px solid var(--container-border);
     border-radius: 0;
     overflow: hidden;
-    flex: 1;
+
+    /* key: always square, driven by width */
     width: 100%;
     max-width: 100%;
+    aspect-ratio: 1 / 1;
+
+    /* allow flex parent to size properly */
+    flex: 1;
     min-height: 0;
 }
 

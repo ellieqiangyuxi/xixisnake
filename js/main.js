@@ -60,9 +60,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const headerEl = document.querySelector("header");
         const consoleStyle = getComputedStyle(consoleEl);
 
+        // Available width inside console
         const consoleInnerW = consoleEl.clientWidth;
         const availW = consoleInnerW - 20 - 6; // console-top padding + container border
 
+        // Available height inside viewport (no dpad now)
         const vh = window.innerHeight;
         const headerH = headerEl ? headerEl.offsetHeight : 36;
         const consoleBorderTop = parseFloat(consoleStyle.borderTopWidth) || 0;
@@ -70,12 +72,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const verticalChrome = headerH + consoleBorderTop + consoleBorderBottom + 30;
         const availH = vh - verticalChrome;
 
+        // Largest square that fits
         const size = Math.max(100, Math.floor(Math.min(availW, availH)));
 
-        container.style.width = size + "px";
-        container.style.height = size + "px";
+        // ✅ Let CSS aspect-ratio keep it square.
+        // Make it full width, but cap max width by available square size.
+        container.style.width = "100%";
+        container.style.maxWidth = size + "px";
 
-        const actualSize = Math.min(container.clientWidth, container.clientHeight);
+        // Read back actual rendered size (width drives height via aspect-ratio)
+        const actualSize = container.clientWidth;
 
         const dpr = window.devicePixelRatio || 1;
         canvas.width = actualSize * dpr;

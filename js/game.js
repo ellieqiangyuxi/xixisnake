@@ -1,4 +1,4 @@
-const GRID_SIZE = 20;
+const GRID_SIZE = 15; // ✅ changed from 20 to 15
 
 const SPEED_MAP = {
     slow: 200,
@@ -99,8 +99,11 @@ class Game {
     render() {
         const ctx = this.ctx;
         const size = this.displaySize;
-        const cellW = size / GRID_SIZE;
-        const cellH = size / GRID_SIZE;
+
+        // ✅ keep cells square by deriving one cell size
+        const cell = size / GRID_SIZE;
+        const cellW = cell;
+        const cellH = cell;
 
         // Background
         ctx.fillStyle = this.darkMode ? "#1a1a2e" : "#d4cfba";
@@ -114,6 +117,7 @@ class Game {
             ctx.moveTo(i * cellW, 0);
             ctx.lineTo(i * cellW, size);
             ctx.stroke();
+
             ctx.beginPath();
             ctx.moveTo(0, i * cellH);
             ctx.lineTo(size, i * cellH);
