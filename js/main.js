@@ -8,15 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const startBtn = document.getElementById("start-btn");
     const restartBtn = document.getElementById("restart-btn");
     const dpad = document.getElementById("dpad");
-    const dpadToggle = document.getElementById("dpad-toggle");
     const themeToggle = document.getElementById("theme-toggle");
     const titleEl = document.querySelector("header h1");
-
-    // D-pad toggle
-    dpadToggle.addEventListener("click", () => {
-        dpad.classList.toggle("dpad-hidden");
-        dpadToggle.classList.toggle("active");
-    });
 
     // Theme toggle
     function isDark() {
@@ -42,17 +35,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const headImage = new Image();
     headImage.src = "assets/snake-head.png";
 
-    // Sizing — Retina-aware, at least 75% of viewport
+    // Sizing — game screen fills available space in the console
     const container = document.getElementById("game-container");
+    const consoleTop = document.querySelector(".console-top");
+
     function resizeCanvas() {
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        // On mobile (narrow), use 95% of width but cap to 85% of height to leave room for header/toggle
-        // On desktop, use 90% of the smaller dimension
-        const isMobile = vw < 768 || ('ontouchstart' in window);
-        const size = isMobile
-            ? Math.floor(Math.min(vw * 0.95, vh * 0.78))
-            : Math.floor(Math.min(vw, vh) * 0.90);
+        // Available space = console-top height minus header
+        const topRect = consoleTop.getBoundingClientRect();
+        const headerHeight = document.querySelector("header").getBoundingClientRect().height + 6;
+        const availH = topRect.height - headerHeight;
+        const availW = topRect.width - 20; // padding
+
+        // Square canvas, fit within available space
+        const size = Math.floor(Math.min(availW, availH));
+
         const dpr = window.devicePixelRatio || 1;
         container.style.width = size + "px";
         container.style.height = size + "px";
